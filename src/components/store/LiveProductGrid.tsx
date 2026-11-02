@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { brl } from "@/lib/format";
 
 export type LiveProduct = {
@@ -25,18 +26,18 @@ export function LiveProductGrid({ products }: { products: LiveProduct[] }) {
     <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4 md:gap-x-6">
       {products.map((p) => {
         const price = currentPrice(p);
-        const href = `https://marcosjoiasbv.com.br/produtos/${encodeURIComponent(p.handle)}/`;
+        const href = p.handle;
         return <article className="group flex flex-col" key={p.id}>
-          <a className="relative block overflow-hidden bg-secondary" href={href}>
+          <Link className="relative block overflow-hidden bg-secondary" to="/produto/$slug" params={{ slug: href }}>
             {p.images[0] ? <img src={p.images[0].src} alt={p.images[0].alt || p.name} loading="lazy" className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" /> : <div className="aspect-[4/5] bg-secondary" />}
-          </a>
+          </Link>
           <div className="flex flex-1 flex-col pt-4">
-            <a href={href} className="text-sm leading-snug hover:underline">{p.name}</a>
+            <Link to="/produto/$slug" params={{ slug: href }} className="text-sm leading-snug hover:underline">{p.name}</Link>
             {price ? <div className="mt-2 flex items-baseline gap-2">
               <span className="font-semibold">{brl(price.amount)}</span>
               {price.amount < price.regular && <span className="text-xs text-muted-foreground line-through">{brl(price.regular)}</span>}
             </div> : <p className="mt-2 text-sm text-muted-foreground">Consulte o preço</p>}
-            <a href={href} className="btn-outline mt-4 flex h-10 w-full items-center justify-center text-[0.65rem]">Ver produto</a>
+            <Link to="/produto/$slug" params={{ slug: href }} className="btn-outline mt-4 flex h-10 w-full items-center justify-center text-[0.65rem]">Ver produto</Link>
           </div>
         </article>;
       })}

@@ -1,47 +1,58 @@
-// Camada de integração com a API da Nuvemshop (PREPARADA, NÃO ATIVA).
-// As credenciais ficam apenas no servidor: NUVEMSHOP_STORE_ID e NUVEMSHOP_ACCESS_TOKEN.
-// Enquanto não estiverem configuradas, as funções retornam { configured: false }
-// e o site continua usando o catálogo demonstrativo em src/data/catalog.ts.
+// Integração com a Storefront API pública (não com a Admin API).
+// Configure NUVEMSHOP_STORE_ID no ambiente do servidor. Não é necessário token
+// OAuth para ler o catálogo público de uma loja habilitada.
+// Documentação: https://nuvemshop.dev/en-US/storefront-api/getting-started
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const API = "https://api.nuvemshop.com.br/v1";
+const API = "https://storefront-api.tiendanube.com";
+const VERSION = "2026-11";
 
-function creds() {
-  const storeId = process.env['NUVEMSHOP_STORE_ID'];
-  const token = process.env['NUVEMSHOP_ACCESS_TOKEN'];
-  return storeId && token ? { storeId, token } : null;
+function storeId() {
+  const value = process.env["NUVEMSHOP_STORE_ID"]?.trim();
+  if (!value || !/^\d+$/.test(value)) return null;
+  return value;
 }
 
-async function call(path: string, init?: RequestInit) {
-  const c = creds();
-  if (!c) return { configured: false as const, data: null };
-  const res = await fetch(`${API}/${c.storeId}${path}`, {
-    ...init,
-    headers: {
-      Authentication: `bearer ${c.token}`,
-      "User-Agent": "Marcos Joias & Relogios",
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
-  });
-  if (!res.ok) throw new Error(`Nuvemshop ${res.status}`);
-  return { configured: true as const, data: await res.json() };
+async function storefrontGet(resource: "products" | "categories") {
+  const id = storeId();
+  if (!id) return { configured: false as const, data: null };
+  const fields = resource === "products"
+    ? "?fields=id,name,handle,images,variants,categories,description"
+    : "";
+  const response = await fetch(
+    `${API}/${VERSION}/stores/${id}/${resource}${fields}`,
+    { headers: { Accept: "application/json" }, cache: "no-store" },
+  );
+  if (!response.ok) {
+    // Falhar explicitamente é mais seguro que mostrar produtos fictícios como reais.
+    throw new Error(`Erro na Storefront API (${resource}): HTTP ${response.status}`);
+  }
+  // A Storefront API retorna { data: [...], pagination: {...} }.
+  return { configured: true as const, data: await response.json() };
 }
 
-export const nuvemshopProducts = createServerFn({ method: "GET" }).handler(() => call("/products"));
-export const nuvemshopCategories = createServerFn({ method: "GET" }).handler(() => call("/categories"));
+export const nuvemshopProducts = createServerFn({ method: "GET" }).handler(
+  () => storefrontGet("products"),
+);
+export const nuvemshopCategories = createServerFn({ method: "GET" }).handler(
+  () => storefrontGet("categories"),
+);
 
-// Checkout: a ser implementado com o fluxo oficial da Nuvemshop.
-// Recebe os itens do carrinho e deverá retornar a URL de checkout.
+// Ainda não está ligado ao botão de comprar. O carrinho local hoje usa slugs
+// demonstrativos; a API exige os IDs reais de product_id e variant_id.
+// Não iniciar checkout até que o catálogo e a seleção de variantes sejam migrados.
 export const nuvemshopCheckout = createServerFn({ method: "POST" })
   .inputValidator(
     z.object({
-      items: z.array(z.object({ slug: z.string(), variant: z.string().optional(), qty: z.number().int().min(1).max(99) })).max(50),
+      items: z.array(z.object({
+        slug: z.string(),
+        variant: z.string().optional(),
+        qty: z.number().int().min(1).max(99),
+      })).max(50),
       coupon: z.string().max(40).optional(),
     }),
   )
   .handler(async () => {
-    if (!creds()) return { configured: false as const, checkoutUrl: null };
     return { configured: false as const, checkoutUrl: null };
   });

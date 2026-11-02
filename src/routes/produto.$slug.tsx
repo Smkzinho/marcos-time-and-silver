@@ -35,11 +35,10 @@ function ProductPage() {
       const result = await nuvemshopBuyNow({ data: { productId: product.id, variantId: selected.id, quantity: qty } });
       window.location.assign(result.checkoutUrl);
     } catch {
-      toast.error("Não foi possível abrir o checkout. Use a opção da loja oficial.");
+      toast.error("Não foi possível iniciar o pagamento. Tente novamente em instantes.");
       setCheckingOut(false);
     }
   };
-  const nativeUrl = `https://marcosjoiasbv.com.br/produtos/${encodeURIComponent(product.handle)}/`;
   return <div className="mx-auto grid max-w-7xl gap-8 px-0 py-6 md:grid-cols-2 md:gap-14 md:px-8 md:py-12">
     <div>
       <div className="overflow-hidden bg-secondary">
@@ -57,8 +56,7 @@ function ProductPage() {
       {available.length > 1 && <div className="mt-8"><p className="eyebrow mb-3">Escolha a opção</p><div className="flex flex-wrap gap-2">{available.map(v => <button type="button" key={v.id} onClick={() => setVariantId(v.id)} className={`border px-4 py-3 text-sm ${selected?.id === v.id ? "border-foreground bg-foreground text-background" : "hover:border-foreground"}`}>{v.values?.join(" / ") || `Opção ${v.id}`}</button>)}</div></div>}
       <div className="mt-8"><p className="eyebrow mb-3">Quantidade</p><div className="inline-flex h-12 items-center border"><button type="button" className="px-4" onClick={() => setQty(q => Math.max(1,q-1))}>−</button><span className="w-8 text-center text-sm">{qty}</span><button type="button" className="px-4" onClick={() => setQty(q => Math.min(99,q+1))}>+</button></div></div>
       <p className="mt-6 text-sm text-muted-foreground">A finalização do pagamento acontece no ambiente seguro da Nuvemshop.</p>
-      {selected && <button type="button" onClick={checkoutNow} disabled={checkingOut} className="btn-solid mt-4 w-full">{checkingOut ? "Abrindo checkout..." : "Comprar agora"}</button>}
-      <a href={nativeUrl} className="btn-outline mt-3 flex w-full items-center justify-center">{available.length ? "Comprar na loja oficial" : "Consultar disponibilidade"}</a>
+      {selected && available.length > 0 ? <button type="button" onClick={checkoutNow} disabled={checkingOut} className="btn-solid mt-4 w-full">{checkingOut ? "Abrindo checkout..." : "Comprar agora"}</button> : <p className="mt-4 text-sm text-muted-foreground">Produto indisponível no momento.</p>}
       <div className="mt-8 flex gap-3 bg-secondary p-4 text-sm"><Truck className="h-5 w-5 shrink-0" /><p className="text-muted-foreground">Frete e formas de pagamento calculados na finalização da compra.</p></div>
       {product.description && <div className="mt-10 border-t pt-8"><h2 className="eyebrow mb-3">Descrição</h2><div className="text-sm leading-relaxed text-muted-foreground">{product.description.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ")}</div></div>}
     </div>

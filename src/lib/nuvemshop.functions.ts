@@ -8,8 +8,8 @@ import { z } from "zod";
 const API = "https://api.nuvemshop.com.br/v1";
 
 function creds() {
-  const storeId = process.env.NUVEMSHOP_STORE_ID;
-  const token = process.env.NUVEMSHOP_ACCESS_TOKEN;
+  const storeId = process.env['NUVEMSHOP_STORE_ID'];
+  const token = process.env['NUVEMSHOP_ACCESS_TOKEN'];
   return storeId && token ? { storeId, token } : null;
 }
 

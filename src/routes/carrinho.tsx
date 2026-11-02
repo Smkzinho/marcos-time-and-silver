@@ -27,7 +27,7 @@ function CartPage() {
   const checkout = async () => {
     setLoading(true);
     try {
-      const r = await nuvemshopCheckout({ data: { items, coupon: coupon || undefined } });
+      const r = await nuvemshopCheckout({ data: { items: items.map((i) => ({ slug: i.slug, qty: i.qty, ...(i.variant ? { variant: i.variant } : {}) })), coupon: coupon || undefined } });
       if (r.checkoutUrl) window.location.href = r.checkoutUrl;
       else toast("Checkout em preparação", { description: "A finalização de compra será habilitada após a integração com a Nuvemshop." });
     } catch {

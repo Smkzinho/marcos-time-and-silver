@@ -1,119 +1,51 @@
-import { createFileRoute, notFound, useNavigate, Link } from "@tanstack/react-router";
-import { Minus, Plus, Truck } from "lucide-react";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { toast } from "sonner";
-import { getCategory, getProduct, products } from "@/data/catalog";
-import { brl, installmentText } from "@/lib/format";
-import { useCart } from "@/lib/cart";
-import { ProductGrid, SectionTitle } from "@/components/store/ProductCard";
+import { Truck } from "lucide-react";
+import { nuvemshopProduct } from "@/lib/nuvemshop.functions";
+import { brl } from "@/lib/format";
 
+type Variant = { id: number; values?: string[]; price: string | null; promotional_price: string | null; stock?: number | null; stock_management?: boolean };
+type Product = { id: number; name: string; handle: string; description?: string; images: { src: string; alt?: string }[]; attributes?: string[]; variants: Variant[] };
 export const Route = createFileRoute("/produto/$slug")({
-  loader: ({ params }) => {
-    const product = getProduct(params.slug);
+  loader: async ({ params }) => {
+    const product = await nuvemshopProduct({ data: { handle: params.slug } });
     if (!product) throw notFound();
-    return { product };
+    return { product: product as Product };
   },
-  head: ({ loaderData }) => {
-    const t = loaderData ? `${loaderData.product.name} — Marcos Joias & Relógios` : "Produto — Marcos Joias & Relógios";
-    const d = loaderData ? `${loaderData.product.name}. ${loaderData.product.material}.` : "";
-    return { meta: [{ title: t }, { name: "description", content: d }, { property: "og:title", content: t }, { property: "og:description", content: d }, { property: "og:type", content: "product" }] };
-  },
+  head: ({ loaderData }) => ({ meta: [{ title: loaderData ? `${loaderData.product.name} — Marcos Joias & Relógios` : "Produto — Marcos Joias & Relógios" }] }),
   component: ProductPage,
 });
-
 function ProductPage() {
   const { product } = Route.useLoaderData();
-  const { add } = useCart();
-  const navigate = useNavigate();
-  const [img, setImg] = useState(0);
+  const [imageIndex, setImageIndex] = useState(0);
+  const [variantId, setVariantId] = useState<number | null>(null);
   const [qty, setQty] = useState(1);
-  const [variant, setVariant] = useState(product.variants?.options[0]);
-  const category = getCategory(product.category);
-  const related = products.filter((p) => p.slug !== product.slug && p.category === product.category).concat(products.filter((p) => p.category !== product.category)).slice(0, 4);
-
-  const addToCart = () => {
-    add(product.slug, qty, variant);
-    toast.success("Adicionado ao carrinho", { description: product.name });
-  };
-
-  return (
-    <div key={product.slug}>
-      <div className="mx-auto grid max-w-7xl gap-8 px-0 md:grid-cols-2 md:gap-14 md:px-8 md:py-12">
-        <div>
-          <div className="overflow-hidden bg-secondary">
-            <img src={product.images[img]} alt={product.name} width={800} height={1008} className="aspect-[4/5] w-full object-cover animate-in fade-in duration-500" key={img} />
-          </div>
-          {product.images.length > 1 && (
-            <div className="mt-2 flex gap-2 px-4 md:px-0">
-              {product.images.map((src, i) => (
-                <button key={i} onClick={() => setImg(i)} aria-label={`Imagem ${i + 1}`} className={`w-20 overflow-hidden border ${i === img ? "border-foreground" : "border-transparent opacity-60"}`}>
-                  <img src={src} alt="" className="aspect-square w-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="px-4 md:px-0 md:pt-6">
-          {category && <Link to="/categoria/$slug" params={{ slug: category.slug }} className="eyebrow text-muted-foreground hover:text-foreground">{category.name}</Link>}
-          <h1 className="mt-3 text-3xl leading-tight md:text-4xl">{product.name}</h1>
-          <p className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">Produto demonstrativo</p>
-          <div className="mt-6 flex items-baseline gap-3">
-            <span className="text-2xl font-semibold">{brl(product.price)}</span>
-            {product.compareAtPrice && <span className="text-muted-foreground line-through">{brl(product.compareAtPrice)}</span>}
-          </div>
-          <p className="mt-1 text-sm text-muted-foreground">{installmentText(product.price)}</p>
-
-          {product.variants && (
-            <div className="mt-8">
-              <p className="eyebrow mb-3">{product.variants.label}: <span className="text-muted-foreground">{variant}</span></p>
-              <div className="flex flex-wrap gap-2">
-                {product.variants.options.map((o) => (
-                  <button key={o} onClick={() => setVariant(o)} className={`h-10 min-w-12 border px-4 text-sm transition-colors ${o === variant ? "border-foreground bg-foreground text-background" : "hover:border-foreground"}`}>{o}</button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="mt-8">
-            <p className="eyebrow mb-3">Quantidade</p>
-            <div className="inline-flex h-12 items-center border">
-              <button aria-label="Diminuir" className="px-4" onClick={() => setQty((q) => Math.max(1, q - 1))}><Minus className="h-4 w-4" /></button>
-              <span className="w-8 text-center text-sm">{qty}</span>
-              <button aria-label="Aumentar" className="px-4" onClick={() => setQty((q) => Math.min(99, q + 1))}><Plus className="h-4 w-4" /></button>
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-col gap-3">
-            <button className="btn-solid w-full" onClick={() => { add(product.slug, qty, variant); navigate({ to: "/carrinho" }); }}>Comprar</button>
-            <button className="btn-outline w-full" onClick={addToCart}>Adicionar ao carrinho</button>
-          </div>
-
-          <div className="mt-8 flex gap-3 bg-secondary p-4 text-sm">
-            <Truck className="h-5 w-5 shrink-0" strokeWidth={1.5} />
-            <p className="text-muted-foreground">Opções e prazos de entrega serão calculados na finalização da compra, conforme o seu CEP.</p>
-          </div>
-
-          <div className="mt-10 space-y-8 border-t pt-8">
-            <div>
-              <h2 className="eyebrow mb-3 font-sans">Descrição</h2>
-              <p className="text-sm leading-relaxed text-muted-foreground">{product.description}</p>
-            </div>
-            <div>
-              <h2 className="eyebrow mb-3 font-sans">Material e características</h2>
-              <p className="text-sm text-muted-foreground">{product.material}</p>
-              <ul className="mt-3 list-inside list-disc space-y-1 text-sm text-muted-foreground">
-                {product.features.map((f) => <li key={f}>{f}</li>)}
-              </ul>
-            </div>
-          </div>
-        </div>
+  const available = product.variants.filter(v => !v.stock_management || (v.stock ?? 0) > 0);
+  const selected = available.find(v => v.id === variantId) ?? available[0] ?? product.variants[0];
+  const regular = selected?.price == null ? null : Number(selected.price);
+  const promotional = selected?.promotional_price == null ? null : Number(selected.promotional_price);
+  const price = promotional != null && Number.isFinite(promotional) ? promotional : regular;
+  const nativeUrl = `https://marcosjoiasbv.com.br/produtos/${encodeURIComponent(product.handle)}/`;
+  return <div className="mx-auto grid max-w-7xl gap-8 px-0 py-6 md:grid-cols-2 md:gap-14 md:px-8 md:py-12">
+    <div>
+      <div className="overflow-hidden bg-secondary">
+        {product.images[imageIndex] ? <img src={product.images[imageIndex].src} alt={product.images[imageIndex].alt || product.name} className="aspect-[4/5] w-full object-cover" /> : <div className="aspect-[4/5]" />}
       </div>
-
-      <section className="mx-auto max-w-7xl px-4 py-20 md:px-8">
-        <SectionTitle title="Você também pode gostar" />
-        <ProductGrid products={related} />
-      </section>
+      {product.images.length > 1 && <div className="mt-2 flex gap-2 overflow-x-auto px-4 md:px-0">{product.images.map((img, i) => <button key={i} type="button" onClick={() => setImageIndex(i)} className={`w-20 shrink-0 overflow-hidden border ${imageIndex === i ? "border-foreground" : "border-transparent opacity-60"}`}><img src={img.src} alt={img.alt || `Foto ${i + 1}`} className="aspect-square w-full object-cover" /></button>)}</div>}
     </div>
-  );
+    <div className="px-4 md:px-0 md:pt-6">
+      <p className="eyebrow text-muted-foreground">Marcos Joias & Relógios</p>
+      <h1 className="mt-3 text-3xl leading-tight md:text-4xl">{product.name}</h1>
+      <div className="mt-6 flex items-baseline gap-3">
+        {price != null && Number.isFinite(price) ? <span className="text-2xl font-semibold">{brl(price)}</span> : <span>Consulte o preço</span>}
+        {regular != null && price != null && price < regular && <span className="text-muted-foreground line-through">{brl(regular)}</span>}
+      </div>
+      {available.length > 1 && <div className="mt-8"><p className="eyebrow mb-3">Escolha a opção</p><div className="flex flex-wrap gap-2">{available.map(v => <button type="button" key={v.id} onClick={() => setVariantId(v.id)} className={`border px-4 py-3 text-sm ${selected?.id === v.id ? "border-foreground bg-foreground text-background" : "hover:border-foreground"}`}>{v.values?.join(" / ") || `Opção ${v.id}`}</button>)}</div></div>}
+      <div className="mt-8"><p className="eyebrow mb-3">Quantidade</p><div className="inline-flex h-12 items-center border"><button type="button" className="px-4" onClick={() => setQty(q => Math.max(1,q-1))}>−</button><span className="w-8 text-center text-sm">{qty}</span><button type="button" className="px-4" onClick={() => setQty(q => Math.min(99,q+1))}>+</button></div></div>
+      <p className="mt-6 text-sm text-muted-foreground">Você será direcionado à loja oficial para escolher a quantidade e finalizar com segurança.</p>
+      <a href={nativeUrl} className="btn-solid mt-4 flex w-full items-center justify-center">{available.length ? "Comprar na loja oficial" : "Consultar disponibilidade"}</a>
+      <div className="mt-8 flex gap-3 bg-secondary p-4 text-sm"><Truck className="h-5 w-5 shrink-0" /><p className="text-muted-foreground">Frete e formas de pagamento calculados na finalização da compra.</p></div>
+      {product.description && <div className="mt-10 border-t pt-8"><h2 className="eyebrow mb-3">Descrição</h2><div className="text-sm leading-relaxed text-muted-foreground" dangerouslySetInnerHTML={{ __html: product.description }} /></div>}
+    </div>
+  </div>;
 }

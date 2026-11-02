@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { categories } from "@/data/catalog";
 import { store } from "@/config/store";
 import { Logo } from "./Logo";
+import { commerce } from "@/data/commerce";
 
 const h = "eyebrow mb-5 text-primary-foreground";
 const a = "text-sm text-muted-foreground transition-colors hover:text-primary-foreground";
@@ -37,10 +38,10 @@ export function Footer() {
             <li>{store.instagram.url ? <a href={store.instagram.url} target="_blank" rel="noreferrer" className={a}>Instagram {store.instagram.handle}</a> : <span className={a}>Instagram — a configurar</span>}</li>
             <li>{store.whatsapp.url ? <a href={store.whatsapp.url} target="_blank" rel="noreferrer" className={a}>WhatsApp {store.whatsapp.number}</a> : <span className={a}>WhatsApp — a configurar</span>}</li>
           </ul>
-          {store.paymentMethods.length > 0 && (
+          {commerce.paymentMethods.length > 0 && (
             <>
               <p className={`${h} mt-8`}>Formas de pagamento</p>
-              <p className="text-sm text-muted-foreground">{store.paymentMethods.join(" · ")}</p>
+              <p className="text-sm text-muted-foreground">{commerce.paymentMethods.join(" · ")}</p>
             </>
           )}
         </div>

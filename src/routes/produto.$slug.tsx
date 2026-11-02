@@ -22,7 +22,8 @@ function ProductPage() {
   const [variantId, setVariantId] = useState<number | null>(null);
   const [qty, setQty] = useState(1);
   const [checkingOut, setCheckingOut] = useState(false);
-  const available = product.variants.filter(v => !v.stock_management || (v.stock ?? 0) > 0);
+  // Stock may be omitted by the public API; only hide a variant when zero is explicit.
+  const available = product.variants.filter(v => v.stock_management !== true || v.stock !== 0);
   const selected = available.find(v => v.id === variantId) ?? available[0] ?? product.variants[0];
   const regular = selected?.price == null ? null : Number(selected.price);
   const promotional = selected?.promotional_price == null ? null : Number(selected.promotional_price);
@@ -56,7 +57,7 @@ function ProductPage() {
       {available.length > 1 && <div className="mt-8"><p className="eyebrow mb-3">Escolha a opção</p><div className="flex flex-wrap gap-2">{available.map(v => <button type="button" key={v.id} onClick={() => setVariantId(v.id)} className={`border px-4 py-3 text-sm ${selected?.id === v.id ? "border-foreground bg-foreground text-background" : "hover:border-foreground"}`}>{v.values?.join(" / ") || `Opção ${v.id}`}</button>)}</div></div>}
       <div className="mt-8"><p className="eyebrow mb-3">Quantidade</p><div className="inline-flex h-12 items-center border"><button type="button" className="px-4" onClick={() => setQty(q => Math.max(1,q-1))}>−</button><span className="w-8 text-center text-sm">{qty}</span><button type="button" className="px-4" onClick={() => setQty(q => Math.min(99,q+1))}>+</button></div></div>
       <p className="mt-6 text-sm text-muted-foreground">A finalização do pagamento acontece no ambiente seguro da Nuvemshop.</p>
-      {available.length > 0 && <button type="button" onClick={checkoutNow} disabled={checkingOut} className="btn-solid mt-4 w-full">{checkingOut ? "Abrindo checkout..." : "Comprar agora"}</button>}
+      {selected && <button type="button" onClick={checkoutNow} disabled={checkingOut} className="btn-solid mt-4 w-full">{checkingOut ? "Abrindo checkout..." : "Comprar agora"}</button>}
       <a href={nativeUrl} className="btn-outline mt-3 flex w-full items-center justify-center">{available.length ? "Comprar na loja oficial" : "Consultar disponibilidade"}</a>
       <div className="mt-8 flex gap-3 bg-secondary p-4 text-sm"><Truck className="h-5 w-5 shrink-0" /><p className="text-muted-foreground">Frete e formas de pagamento calculados na finalização da compra.</p></div>
       {product.description && <div className="mt-10 border-t pt-8"><h2 className="eyebrow mb-3">Descrição</h2><div className="text-sm leading-relaxed text-muted-foreground">{product.description.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ")}</div></div>}

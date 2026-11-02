@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Instagram } from "lucide-react";
 import { store } from "@/config/store";
-import { byTag, categories } from "@/data/catalog";
-import { ProductGrid, SectionTitle } from "@/components/store/ProductCard";
+import { categories } from "@/data/catalog";
+import { nuvemshopProducts } from "@/lib/nuvemshop.functions";
+import { LiveProductGrid, type LiveProduct } from "@/components/store/LiveProductGrid";
+import { SectionTitle } from "@/components/store/ProductCard";
 import prata from "@/assets/cat-prata.jpg";
 import aco from "@/assets/cat-aco.jpg";
 import crono from "@/assets/prod-cronografo.jpg";
@@ -11,6 +13,14 @@ import smart from "@/assets/cat-smartwatch.jpg";
 import ouro from "@/assets/cat-ouro.jpg";
 
 export const Route = createFileRoute("/")({
+  loader: async () => {
+    try {
+      const response = await nuvemshopProducts();
+      return { liveProducts: (response.data?.data ?? []) as LiveProduct[], error: false };
+    } catch {
+      return { liveProducts: [] as LiveProduct[], error: true };
+    }
+  },
   head: () => ({
     meta: [
       { title: "Marcos Joias & Relógios — Estilo que marca presença" },
@@ -27,6 +37,7 @@ const instaPhotos = [crono, prata, smart, aco, brincos, ouro];
 
 function Index() {
   const { hero } = store;
+  const { liveProducts, error } = Route.useLoaderData();
   return (
     <>
       <section className="relative h-[86svh] min-h-[520px] overflow-hidden bg-primary">
@@ -58,20 +69,9 @@ function Index() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-20 md:px-8">
-        <SectionTitle eyebrow="Produtos demonstrativos" title="Mais vendidos" />
-        <ProductGrid products={byTag("mais-vendidos")} />
-      </section>
-
-      <section className="bg-secondary py-20">
-        <div className="mx-auto max-w-7xl px-4 md:px-8">
-          <SectionTitle eyebrow="Lançamentos" title="Novidades" />
-          <ProductGrid products={byTag("novidades")} />
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 py-20 md:px-8">
-        <SectionTitle eyebrow="Por tempo limitado" title="Ofertas especiais" />
-        <ProductGrid products={byTag("ofertas")} />
+        <SectionTitle eyebrow="Catálogo oficial" title="Conheça nossas peças" />
+        {error && <p role="alert" className="mb-6 text-center text-sm text-muted-foreground">Não foi possível carregar o catálogo agora.</p>}
+        <LiveProductGrid products={liveProducts} />
       </section>
 
       <section className="bg-primary py-20 text-primary-foreground">

@@ -1,5 +1,5 @@
 // Integração com a Storefront API pública (não com a Admin API).
-// Configure NUVEMSHOP_STORE_ID no ambiente do servidor. Não é necessário token
+// Loja pública 8107797 configurada; NUVEMSHOP_STORE_ID pode substituir esse valor. Não é necessário token
 // OAuth para ler o catálogo público de uma loja habilitada.
 // Documentação: https://nuvemshop.dev/en-US/storefront-api/getting-started
 import { createServerFn } from "@tanstack/react-start";
@@ -9,7 +9,7 @@ const API = "https://storefront-api.tiendanube.com";
 const VERSION = "2026-11";
 
 function storeId() {
-  const value = process.env["NUVEMSHOP_STORE_ID"]?.trim();
+  const value = process.env["NUVEMSHOP_STORE_ID"]?.trim() || "8107797";
   if (!value || !/^\d+$/.test(value)) return null;
   return value;
 }

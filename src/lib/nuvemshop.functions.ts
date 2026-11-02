@@ -71,3 +71,40 @@ export const nuvemshopCheckout = createServerFn({ method: "POST" })
   .handler(async () => {
     return { configured: false as const, checkoutUrl: null };
   });
+
+/** Experimental one-item checkout using the documented Storefront cart API.
+ * Keep shopper-facing payments on Nuvemshop's hosted checkout.
+ */
+export const nuvemshopBuyNow = createServerFn({ method: "POST" })
+  .inputValidator(z.object({
+    productId: z.number().int().positive(),
+    variantId: z.number().int().positive(),
+    quantity: z.number().int().min(1).max(99),
+  }))
+  .handler(async ({ data }) => {
+    const id = storeId();
+    if (!id) throw new Error("Loja não configurada");
+    const base = `${API}/unstable/stores/${id}/carts`;
+    async function send(url: string, body?: unknown) {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        cache: "no-store",
+      });
+      if (!res.ok) throw new Error(`Carrinho Nuvemshop: HTTP ${res.status}`);
+      return res.json();
+    }
+    const created = await send(base);
+    if (typeof created?.id !== "string") throw new Error("Resposta de carrinho inválida");
+    const cartId = encodeURIComponent(created.id);
+    await send(`${base}/${cartId}/line-items`, {
+      product_id: data.productId,
+      variant_id: data.variantId,
+      quantity: data.quantity,
+    });
+    const checkout = await send(`${base}/${cartId}/checkout`);
+    const url = checkout?.checkout_url;
+    if (typeof url !== "string" || !url.startsWith("https://")) throw new Error("URL de checkout inválida");
+    return { checkoutUrl: url };
+  });

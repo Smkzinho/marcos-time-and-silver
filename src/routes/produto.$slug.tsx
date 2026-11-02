@@ -45,7 +45,7 @@ function ProductPage() {
       <p className="mt-6 text-sm text-muted-foreground">Você será direcionado à loja oficial para escolher a quantidade e finalizar com segurança.</p>
       <a href={nativeUrl} className="btn-solid mt-4 flex w-full items-center justify-center">{available.length ? "Comprar na loja oficial" : "Consultar disponibilidade"}</a>
       <div className="mt-8 flex gap-3 bg-secondary p-4 text-sm"><Truck className="h-5 w-5 shrink-0" /><p className="text-muted-foreground">Frete e formas de pagamento calculados na finalização da compra.</p></div>
-      {product.description && <div className="mt-10 border-t pt-8"><h2 className="eyebrow mb-3">Descrição</h2><div className="text-sm leading-relaxed text-muted-foreground" dangerouslySetInnerHTML={{ __html: product.description }} /></div>}
+      {product.description && <div className="mt-10 border-t pt-8"><h2 className="eyebrow mb-3">Descrição</h2><div className="text-sm leading-relaxed text-muted-foreground">{product.description.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ")}</div></div>}
     </div>
   </div>;
 }

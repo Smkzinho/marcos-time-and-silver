@@ -39,6 +39,21 @@ export const nuvemshopCategories = createServerFn({ method: "GET" }).handler(
   () => storefrontGet("categories"),
 );
 
+
+export const nuvemshopProduct = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ handle: z.string().min(1).max(200) }))
+  .handler(async ({ data }) => {
+    const id = storeId();
+    if (!id) return null;
+    const response = await fetch(
+      `${API}/${VERSION}/stores/${id}/products/${encodeURIComponent(data.handle)}?fields=id,name,handle,description,images,variants,attributes,categories`,
+      { headers: { Accept: "application/json" }, cache: "no-store" },
+    );
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`Erro ao carregar produto: HTTP ${response.status}`);
+    return response.json();
+  });
+
 // Ainda não está ligado ao botão de comprar. O carrinho local hoje usa slugs
 // demonstrativos; a API exige os IDs reais de product_id e variant_id.
 // Não iniciar checkout até que o catálogo e a seleção de variantes sejam migrados.

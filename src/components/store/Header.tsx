@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { categories } from "@/data/catalog";
 import { useCart } from "@/lib/cart";
 import { Logo } from "./Logo";
@@ -13,6 +14,16 @@ const nav = [
 export function Header() {
   const { count } = useCart();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    if (!open) return;
+    const priorOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKeyDown);
+    return () => { document.body.style.overflow = priorOverflow; window.removeEventListener("keydown", onKeyDown); };
+  }, [open]);
 
   const linkCls = "text-[0.7rem] font-medium uppercase tracking-[0.18em] text-foreground/80 transition-colors hover:text-foreground";
 
@@ -48,10 +59,10 @@ export function Header() {
         </div>
       </div>
 
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-foreground/40 animate-in fade-in" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 flex w-[82%] max-w-sm flex-col bg-background p-6 animate-in slide-in-from-left duration-300">
+      {mounted && open && createPortal(
+        <div className="fixed inset-0 z-[9999] lg:hidden" role="dialog" aria-modal="true" aria-label="Menu de navegação">
+          <button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
+          <aside className="absolute inset-y-0 left-0 z-10 flex h-full w-[86%] max-w-sm flex-col overflow-y-auto border-r border-neutral-200 bg-white p-6 text-[#080808] shadow-2xl animate-in slide-in-from-left duration-300">
             <div className="flex items-center justify-between">
               <Logo />
               <button aria-label="Fechar menu" onClick={() => setOpen(false)}><X className="h-5 w-5" strokeWidth={1.5} /></button>
@@ -66,10 +77,10 @@ export function Header() {
                   <Link key="home" to="/" onClick={() => setOpen(false)} className="border-b py-4 text-sm uppercase tracking-[0.18em]">{n.label}</Link>
                 ),
               )}
-              <Link to="/conta" onClick={() => setOpen(false)} className="py-4 text-sm uppercase tracking-[0.18em] text-muted-foreground">Minha conta</Link>
+              <Link to="/conta" onClick={() => setOpen(false)} className="py-4 text-sm uppercase tracking-[0.18em] text-neutral-700">Minha conta</Link>
             </nav>
           </aside>
-        </div>
+        </div>, document.body
       )}
     </header>
   );

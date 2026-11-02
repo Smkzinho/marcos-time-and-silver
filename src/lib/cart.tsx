@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { getProduct } from "@/data/catalog";
 
-export type CartItem = { slug: string; variant?: string; qty: number };
+export type CartItem = { slug: string; variant?: string | undefined; qty: number };
 const KEY = "mjr-cart-v1";
-const keyOf = (i: { slug: string; variant?: string }) => `${i.slug}::${i.variant ?? ""}`;
+const keyOf = (i: { slug: string; variant?: string | undefined }) => `${i.slug}::${i.variant ?? ""}`;
 
 type Ctx = {
   items: CartItem[];

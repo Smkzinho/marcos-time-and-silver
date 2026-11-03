@@ -5,7 +5,9 @@ import { toast } from "sonner";
 import { getProduct } from "@/services/catalog";
 import { brl, installmentText } from "@/lib/format";
 import { useCart } from "@/lib/cart";
-import { nuvemshopCheckout } from "@/lib/nuvemshop.functions";
+import { startNuvemshopCheckout } from "@/services/nuvemshop/checkout.functions";
+import { toCheckoutLines } from "@/services/checkout";
+import { commerce } from "@/data/commerce";
 
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
@@ -27,7 +29,7 @@ function CartPage() {
   const checkout = async () => {
     setLoading(true);
     try {
-      const r = await nuvemshopCheckout({ data: { items: items.map((i) => ({ slug: i.slug, qty: i.qty, ...(i.variant ? { variant: i.variant } : {}) })), coupon: coupon || undefined } });
+      const r = await startNuvemshopCheckout({ data: { items: toCheckoutLines(items, getProduct), ...(coupon ? { coupon } : {}) } });
       if (r.checkoutUrl) window.location.href = r.checkoutUrl;
       else toast("Checkout em preparação", { description: "A finalização de compra será habilitada após a integração com a Nuvemshop." });
     } catch {
@@ -84,7 +86,7 @@ function CartPage() {
           <p className="eyebrow">Resumo</p>
           <div className="mt-6 flex justify-between text-sm"><span>Subtotal</span><span className="font-semibold">{brl(subtotal)}</span></div>
           <p className="mt-1 text-right text-xs text-muted-foreground">{installmentText(subtotal)}</p>
-          <p className="mt-3 text-xs text-muted-foreground">Frete calculado na finalização.</p>
+          <p className="mt-3 text-xs text-muted-foreground">{commerce.cartShippingNote}</p>
           <form className="mt-6 flex" onSubmit={(e) => { e.preventDefault(); toast("Cupom registrado", { description: "Será validado na finalização da compra." }); }}>
             <input value={coupon} onChange={(e) => setCoupon(e.target.value.toUpperCase().slice(0, 40))} placeholder="Cupom de desconto" className="h-11 flex-1 border bg-background px-3 text-sm outline-none focus:border-foreground" />
             <button className="h-11 border border-l-0 bg-background px-4 text-xs uppercase tracking-widest">Aplicar</button>

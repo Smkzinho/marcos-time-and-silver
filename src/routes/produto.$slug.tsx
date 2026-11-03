@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { getCategory, getProduct, products } from "@/services/catalog";
 import { brl, installmentText } from "@/lib/format";
 import { useCart } from "@/lib/cart";
+import { commerce } from "@/data/commerce";
 import { ProductGrid, SectionTitle } from "@/components/store/ProductCard";
 
 export const Route = createFileRoute("/produto/$slug")({
@@ -91,7 +92,7 @@ function ProductPage() {
 
           <div className="mt-8 flex gap-3 bg-secondary p-4 text-sm">
             <Truck className="h-5 w-5 shrink-0" strokeWidth={1.5} />
-            <p className="text-muted-foreground">Opções e prazos de entrega serão calculados na finalização da compra, conforme o seu CEP.</p>
+            <p className="text-muted-foreground">{commerce.shippingNote}</p>
           </div>
 
           <div className="mt-10 space-y-8 border-t pt-8">

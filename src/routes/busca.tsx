@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { z } from "zod";
-import { products } from "@/data/catalog";
+import { products } from "@/services/catalog";
 import { ProductGrid } from "@/components/store/ProductCard";
 
 export const Route = createFileRoute("/busca")({

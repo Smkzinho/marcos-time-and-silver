@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { categories } from "@/data/catalog";
+import { categories } from "@/services/catalog";
 import { store } from "@/config/store";
 import { Logo } from "./Logo";
 import { commerce } from "@/data/commerce";

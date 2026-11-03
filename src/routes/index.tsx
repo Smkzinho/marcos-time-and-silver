@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Instagram } from "lucide-react";
 import { store } from "@/config/store";
-import { byTag, categories } from "@/data/catalog";
+import { byTag, categories } from "@/services/catalog";
 import { ProductGrid, SectionTitle } from "@/components/store/ProductCard";
 import prata from "@/assets/cat-prata.jpg";
 import aco from "@/assets/cat-aco.jpg";

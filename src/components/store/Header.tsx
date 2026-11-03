@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useState } from "react";
-import { categories } from "@/data/catalog";
+import { categories } from "@/services/catalog";
 import { useCart } from "@/lib/cart";
 import { Logo } from "./Logo";
 

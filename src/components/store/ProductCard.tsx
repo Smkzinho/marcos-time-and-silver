@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import type { Product } from "@/data/catalog";
+import type { Product } from "@/services/catalog";
 import { brl, installmentText } from "@/lib/format";
 import { useCart } from "@/lib/cart";
 

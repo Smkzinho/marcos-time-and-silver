@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { getProduct } from "@/data/catalog";
+import { getProduct } from "@/services/catalog";
 import { brl, installmentText } from "@/lib/format";
 import { useCart } from "@/lib/cart";
 import { nuvemshopCheckout } from "@/lib/nuvemshop.functions";

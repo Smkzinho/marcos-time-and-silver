@@ -2,7 +2,7 @@ import { createFileRoute, notFound, useNavigate, Link } from "@tanstack/react-ro
 import { Minus, Plus, Truck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { getCategory, getProduct, products } from "@/data/catalog";
+import { getCategory, getProduct, products } from "@/services/catalog";
 import { brl, installmentText } from "@/lib/format";
 import { useCart } from "@/lib/cart";
 import { ProductGrid, SectionTitle } from "@/components/store/ProductCard";

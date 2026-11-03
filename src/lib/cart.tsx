@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { getProduct } from "@/data/catalog";
+import { getProduct } from "@/services/catalog";
 
 export type CartItem = { slug: string; variant?: string | undefined; qty: number };
 const KEY = "mjr-cart-v1";
